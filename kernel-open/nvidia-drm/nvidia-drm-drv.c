@@ -2070,6 +2070,13 @@ void nv_drm_register_drm_device(const struct NvKmsKapiGpuInfo *gpu_info)
         #elif defined(NV_DRM_FBDEV_GENERIC_AVAILABLE)
         drm_fbdev_generic_setup(dev, 32);
         #endif
+
+        /*
+         * The fbdev setup functions above may override the
+         * `pm_vt_switch_required` state of our PCI device. For now, a VT switch
+         * is required during suspend and resume.
+         */
+        pm_vt_switch_required(dev->dev, true);
     }
 #endif /* defined(NV_DRM_FBDEV_AVAILABLE) */
 
