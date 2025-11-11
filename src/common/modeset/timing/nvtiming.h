@@ -1925,6 +1925,7 @@ typedef struct tagNVT_EDID_RANGE_LIMIT
     NvU32 min_h_rate_hz;
     NvU32 max_h_rate_hz;
     NvU32 max_pclk_10khz;
+    NvU32 max_rld_pclk_mhz;
 } NVT_EDID_RANGE_LIMIT;
 
 // timing support

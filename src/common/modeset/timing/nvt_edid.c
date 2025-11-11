@@ -3011,6 +3011,7 @@ NVT_STATUS NvTiming_CalculateEDIDLimits(NVT_EDID_INFO *pEdidInfo, NVT_EDID_RANGE
     pLimit->min_h_rate_hz = ~0;
     pLimit->max_h_rate_hz = 0;
     pLimit->max_pclk_10khz = 0;
+    pLimit->max_rld_pclk_mhz = 0;
 
     // find the ranges in the EDID mode list
     for (i = 0; i < pEdidInfo->total_timings; i++)
@@ -3053,7 +3054,6 @@ NVT_STATUS NvTiming_CalculateEDIDLimits(NVT_EDID_INFO *pEdidInfo, NVT_EDID_RANGE
         if (pEdidInfo->ldd[i].tag == NVT_EDID_DISPLAY_DESCRIPTOR_DRL)
         {
             NVT_EDID_DD_RANGE_LIMIT *pRangeLimit = &pEdidInfo->ldd[i].u.range_limit;
-            NvU32 max_pclk_10khz;
 
             // {min,max}_v_rate is in hz
             if (pRangeLimit->min_v_rate != 0) {
@@ -3071,16 +3071,20 @@ NVT_STATUS NvTiming_CalculateEDIDLimits(NVT_EDID_INFO *pEdidInfo, NVT_EDID_RANGE
                 pLimit->max_h_rate_hz = pRangeLimit->max_h_rate * 1000;
             }
 
-            // EdidGetMonitorLimits() honored the pclk from the
-            // modelist over what it found in the range limit
-            // descriptor, so do the same here
-            max_pclk_10khz = pRangeLimit->max_pclk_MHz * 100;
-            if (pLimit->max_pclk_10khz < max_pclk_10khz) {
-                pLimit->max_pclk_10khz = max_pclk_10khz;
+            if (pLimit->max_rld_pclk_mhz < pRangeLimit->max_pclk_MHz) {
+                pLimit->max_rld_pclk_mhz = pRangeLimit->max_pclk_MHz;
             }
 
             break;
         }
+    }
+
+    pclk10khz = pLimit->max_rld_pclk_mhz * 100;
+    // EdidGetMonitorLimits() honored the pclk from the
+    // modelist over what it found in the range limit
+    // descriptor, so do the same here
+    if (pLimit->max_pclk_10khz < pclk10khz) {
+        pLimit->max_pclk_10khz = pclk10khz;
     }
 
     return NVT_STATUS_SUCCESS;
