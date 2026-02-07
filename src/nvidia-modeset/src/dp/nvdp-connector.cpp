@@ -603,6 +603,8 @@ NvBool nvDPLibIsModePossible(const NVDPLibConnectorRec *pDpLibConnector,
     NvBool ret = FALSE;
     NvU32 head;
 
+    nvEvoLogDisp(pDispEvo, EVO_LOG_ERROR, "[debug] nvDPLibIsModePossible called");
+
     if ((pParams->queryMode ==
             NV_DP_LIB_IS_MODE_POSSIBLE_QUERY_MODE_POST_IMP) &&
             !DPLibNeedPostIMPDpIsModePossible(pDevEvo, pParams)) {

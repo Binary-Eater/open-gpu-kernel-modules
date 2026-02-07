@@ -1329,6 +1329,7 @@ reRunCompoundQuery:
             *params.head[i].pErrorStatus = DP_IMP_ERROR_NONE;
     }
 
+    DP_PRINTF(DP_ERROR, "[debug] Beginning DP compound query");
     this->beginCompoundQuery(bEnableFEC /* bForceEnableFEC */);
 
     for (NvU32 i = 0; i < NV_MAX_HEADS; i++)
@@ -1338,6 +1339,7 @@ reRunCompoundQuery:
 
         DP_ASSERT(params.head[i].pModesetParams->headIndex == i);
 
+        DP_PRINTF(DP_ERROR, "[debug] Beginning DP compound query attach on head %u", i);
         bResult = this->compoundQueryAttach(params.head[i].pTarget,
                                             *params.head[i].pModesetParams,
                                             params.head[i].pDscParams,
@@ -1393,6 +1395,7 @@ bool ConnectorImpl::compoundQueryAttachMST(Group * target,
         localInfo.lc.enableFEC(isFECCapable());
     }
 
+    DP_PRINTF(DP_ERROR, "[debug] compoundQueryAttachMSTIsDscPossible called");
     if (compoundQueryAttachMSTIsDscPossible(target, modesetParams, pDscParams))
     {
         unsigned int forceDscBitsPerPixelX16 = pDscParams->bitsPerPixelX16;
@@ -1440,16 +1443,28 @@ bool ConnectorImpl::compoundQueryAttachMSTIsDscPossible
     DscParams *pDscParams                       // DSC parameters
 )
 {
-    Device     * newDev = target->enumDevices(0);
-    DeviceImpl * dev    = (DeviceImpl *)newDev;
+    Device     * newDev;
+    DeviceImpl * dev;
     bool bFecCapable = false;
     bool bGpuDscSupported;
+
+    DP_PRINTF(DP_ERROR, "[debug] target is %px", target);
+
+    newDev = target->enumDevices(0);
+
+    DP_PRINTF(DP_ERROR, "[debug] newDev is %px", newDev);
+
+    dev = (DeviceImpl *)newDev;
+
+    DP_PRINTF(DP_ERROR, "[debug] Getting DSC caps");
     main->getDscCaps(&bGpuDscSupported);
+    DP_PRINTF(DP_ERROR, "[debug] DSC support status: %d", bGpuDscSupported);
 
     if (pDscParams && (pDscParams->forceDsc != DSC_FORCE_DISABLE))
     {
         if (dev && dev->isDSCPossible())
         {
+            DP_PRINTF(DP_ERROR, "[debug] Checking for FEC support");
             if ((dev->devDoingDscDecompression != dev) ||
                 ((dev->devDoingDscDecompression == dev) &&
                 (dev->isLogical() && dev->parent)))
@@ -1469,12 +1484,14 @@ bool ConnectorImpl::compoundQueryAttachMSTIsDscPossible
             {
                 bFecCapable = dev->isFECSupported();
             }
+            DP_PRINTF(DP_ERROR, "[debug] FEC support status: %d", bFecCapable);
         }
     }
     else
     {
         return false;
     }
+    DP_PRINTF(DP_ERROR, "[debug] Checking full MST path supports DSC and FEC");
     // Make sure panel/it's parent & GPU supports DSC and the whole path supports FEC
     if (bGpuDscSupported &&                                 // If GPU supports DSC
         this->isFECSupported() &&                           // If GPU supports FEC
@@ -1484,10 +1501,12 @@ bool ConnectorImpl::compoundQueryAttachMSTIsDscPossible
         bFecCapable &&                                      // If path up to dsc decoding device supports FEC
         (modesetParams.modesetInfo.bitsPerComponent != 6))  // DSC doesn't support bpc = 6
     {
+        DP_PRINTF(DP_ERROR, "[debug] Full MST path supports DSC and FEC");
         return true;
     }
     else
     {
+        DP_PRINTF(DP_ERROR, "[debug] Full MST path does not support DSC and FEC");
         return false;
     }
 }
